@@ -3,7 +3,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 ec2 = boto3.client('ec2')
-mylist = []
+#mylist = []
 def get_instances():
     filters = [{ 'Name': 'tag:Owner','Values': [ sys.argv[1]] }]
     response = ec2.describe_instances(Filters = filters)
