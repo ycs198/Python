@@ -13,7 +13,7 @@ def lambda_handler():
                     all_instance.append(tag_name['Value'])
     
     
-    for reservation in response:
+    for reservation in response['Reservations']:
         for instance in reservation['Instances']:
             for tag_name in instance['Tags']:
                 if tag_name['Key'] == 'Name':
