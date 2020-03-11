@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 ##To GET the  Cloudwatch Get for particular instance id 
 def cloudwatch_data(instanceid):
     client = boto3.client('cloudwatch')
-    res = client.get_metric_statistics(Namespace="AWS/EC2",MetricName="CPUUtilization",Period=300,Statistics=['Average'],Dimensions=[{'Name': 'InstanceId','Value': 'i-0b77bdabd4dcfd8a0'}],StartTime=datetime.utcnow() - timedelta(minutes=15),EndTime=datetime.utcnow())
+    res = client.get_metric_statistics(Namespace="AWS/EC2",MetricName="CPUUtilization",Period=300,Statistics=['Average'],Dimensions=[{'Name': 'InstanceId','Value': 'instanceid'}],StartTime=datetime.utcnow() - timedelta(minutes=15),EndTime=datetime.utcnow())
     datapoints_lists = [i['Average'] for i in res['Datapoints']]
     #print(datapoints_lists)
     if datapoints_lists[0] < 10 and datapoints_lists[1] < 10 and datapoints_lists[2] < 10:
