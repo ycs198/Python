@@ -1,8 +1,5 @@
 import boto3
 
-ec2 = boto3.client('ec2')
-filters_apply = [{'Name':'tag:tagname','Values':['tagvalue']}]
-
 def ec2_list():
     res = ec2.describe_instances(Filters=filters_apply)
     return [(instance['InstanceId'],instance['Tags']) for reservation in res['Reservations'] for instance in reservation['Instances']]
@@ -43,8 +40,9 @@ def ami_list():
     res = ec2.describe_images(Filters=filters_apply)
     return [(ami['ImageId'],ami['Tags']) for ami in res['Images']]
 
-
-def main():
+if __name__ == '__main__':
+    ec2 = boto3.client('ec2')
+    filters_apply = [{'Name':'tag:tagname','Values':['tagvalue']}]
     resources_kv = {}
     resources_kv['Ec2Instances'] = ec2_list()
     resources_kv['SecurityGroups'] = sg_list()
@@ -58,8 +56,3 @@ def main():
         for i in v:
             print("updating {} of the resource id {}".format(k,i[0]))
             create_tags(i,k)
-
-
-
-if __name__ == '__main__':
-    main()
