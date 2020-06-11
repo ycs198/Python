@@ -7,10 +7,13 @@ def ec2_list():
 
 def create_tags(resource_meta,resourcename):
     tags_validate = [{'Key': 'lambda','Value': 'CreatedBYBALA'}]
-    tags_update = [i for i in tags_validate if i not in resource_meta[1]]        
-    response = ec2.create_tags(Resources=[resource_meta[0]],Tags=[tags_update])
-    print("updated the tags: " + resourcename)
-    print(response)
+    tags_update = [i for i in tags_validate if i not in resource_meta[1]]
+    if len(tags_update) != 0:
+        response = ec2.create_tags(Resources=[resource_meta[0]],Tags=[tags_update])
+        print("updated the tags: " + resourcename)
+        print(response)
+    else:
+        print("nothing to update as the tags are existing for the resource" + resource_meta[0])
 
 def sg_list():
     res = ec2.describe_security_groups(Filters=filters_apply)
@@ -40,6 +43,8 @@ def ami_list():
     res = ec2.describe_images(Filters=filters_apply)
     return [(ami['ImageId'],ami['Tags']) for ami in res['Images']]
 
+#*** for lamdba
+#def lambda_handler(event, context):
 if __name__ == '__main__':
     ec2 = boto3.client('ec2')
     filters_apply = [{'Name':'tag:tagname','Values':['tagvalue']}]
