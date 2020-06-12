@@ -7,6 +7,7 @@ def ec2_list():
 
 def create_tags(resource_meta,resourcename):
     tags_validate = [{'Key': 'lambda','Value': 'CreatedBYBALA'}]
+    print(resource_meta[1])
     tags_update = [i for i in tags_validate if i not in resource_meta[1]]
     print(tags_update)
     if len(tags_update) == []:
