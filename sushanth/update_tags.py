@@ -8,12 +8,13 @@ def ec2_list():
 def create_tags(resource_meta,resourcename):
     tags_validate = [{'Key': 'lambda','Value': 'CreatedBYBALA'}]
     tags_update = [i for i in tags_validate if i not in resource_meta[1]]
-    if len(tags_update) != 0:
-        response = ec2.create_tags(Resources=[resource_meta[0]],Tags=[tags_update])
+    print(tags_update)
+    if len(tags_update) == []:
+        print("nothing to update as the tags are existing for the resource" + resource_meta[0])
+    else:
+        response = ec2.create_tags(Resources=[resource_meta[0]],Tags=tags_update)
         print("updated the tags: " + resourcename)
         print(response)
-    else:
-        print("nothing to update as the tags are existing for the resource" + resource_meta[0])
 
 def sg_list():
     res = ec2.describe_security_groups(Filters=filters_apply)
