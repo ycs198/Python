@@ -71,8 +71,6 @@ def get_s3_buckets_list():
     return [(i['Name'],s3.get_bucket_tagging(Bucket=i['Name'])['TagSet']) for i in res['Buckets']]
 
 
-
-
 def add_s3_tags(bucketmetadata):
     tags_validate = [{'Key': 'lambda','Value': 'CreatedBYBALA'}]
     tags_update = [i for i in tags_validate if i not in bucketmetadata[1]]
@@ -82,6 +80,37 @@ def add_s3_tags(bucketmetadata):
         s3 = boto3.client('s3')
         res = s3.put_bucket_tagging(Bucket=bucketmetadata[0],Tagging={'Tagset':tags_update})
         print(res)
+
+def get_elb_list():
+    elb = boto3.client('elb')
+    elb_tags_list = []
+    res = elb.describe_load_balancers()
+    for elbname in res['LoadBalancerDescriptions']:
+        name = elbname['LoadBalancerName']
+        r = elb.describe_tags(LoadBalancerNames=name)
+        elb_tags_list.append((name,r['TagDescriptions'][0]['Tags']))
+    return elb_tags_list
+
+def add_elb_tags(elbmetadata):
+    tags_validate = [{'Key': 'lambda','Value': 'CreatedBYBALA'}]
+    tags_update = [i for i in tags_validate if i not in elbmetadata[1]]
+    if len(tags_update) == []:
+        print("nothing to update as the tags are existing for the resource" + elbmetadata[0])
+    else:
+        elb = boto3.client('elb')
+        res = elb.add_tags(LoadBalancerNames=[elbmetadata[0]],Tags=tags_update)
+        print(res)
+
+def get_asg_list():
+    asg = boto3.client('autoscaling')
+    asg_tags_list = []
+    res = asg.describe_auto_scaling_groups(MaxRecords=100)
+    for i in res['AutoScalingGroups']:
+        name = i['AutoScalingGroupName']
+        filters_apply =  [{'Key': 'tag:Name','Value': name}]
+        tags = asg.describe_tags(Filters=filters_apply)['Tags']
+        asg_tags_list.append((name,tags))
+    return asg_tags_list
 
 #*** for lamdba
 #def lambda_handler(event, context):
@@ -99,6 +128,7 @@ if __name__ == '__main__':
     resources_kv['Amis'] = ami_list()
     resources_kv['S3Bucket'] = get_s3_buckets_list()
     resources_kv['rds'] = get_rds_list()
+    resources_kv['elb'] = get_elb_list()
     for k,v in resources_kv.items():
         if k == 'S3Bucket':
             for i in v:
@@ -108,6 +138,10 @@ if __name__ == '__main__':
             for i in v:
                 print("updating {} of the resource id {}".format(k,i[0]))
                 add_rds_tags(i)
+        elif k == 'elb':
+            for i in v:
+                print("updating {} of the resource id {}".format(k,i[0]))
+                add_elb_tags(i)
         else:
             for i in v:
                 print("updating {} of the resource id {}".format(k,i[0]))
