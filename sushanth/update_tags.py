@@ -45,6 +45,44 @@ def ami_list():
     res = ec2.describe_images(Filters=filters_apply)
     return [(ami['ImageId'],ami['Tags']) for ami in res['Images']]
 
+
+def get_rds_list():
+    filters_apply = [{'Name':'tag:tagname','Values':['tagvalue']}]
+    rds = boto3.client('rds')
+    res = rds.describe_db_instances(Filters=filters_apply)
+    return [(res['DBName'],rds.list_tags_for_resource(ResourceName=res['DBName'])['TagList']) for rds in res['DBInstances']]
+
+
+def add_rds_tags(dbmetadata):
+    rds = boto3.client('rds')
+    tags_validate = [{'Key': 'lambda','Value': 'CreatedBYBALA'}]
+    tags_update = [i for i in tags_validate if i not in dbmetadata[1]]
+    if len(tags_update) == []:
+         print("nothing to update as the tags are existing for the resource" + dbmetadata[0])
+    else:
+        response = rds.add_tags_to_resource(ResourceName=dbmetadata[0],Tags=tags_update)
+        print("updated the tags: " + dbmetadata[0])
+        print(response)
+
+
+def get_s3_buckets_list():
+    s3 = boto3.client('s3')
+    res = s3.list_buckets()
+    return [(i['Name'],s3.get_bucket_tagging(Bucket=i['Name'])['TagSet']) for i in res['Buckets']]
+
+
+
+
+def add_s3_tags(bucketmetadata):
+    tags_validate = [{'Key': 'lambda','Value': 'CreatedBYBALA'}]
+    tags_update = [i for i in tags_validate if i not in bucketmetadata[1]]
+    if len(tags_update) == []:
+        print("nothing to update as the tags are existing for the resource" + bucketmetadata[0])
+    else:
+        s3 = boto3.client('s3')
+        res = s3.put_bucket_tagging(Bucket=bucketmetadata[0],Tagging={'Tagset':tags_update})
+        print(res)
+
 #*** for lamdba
 #def lambda_handler(event, context):
 if __name__ == '__main__':
@@ -59,7 +97,18 @@ if __name__ == '__main__':
     resources_kv['InternetGateways'] = internet_gateway_list()
     resources_kv['NetworkInterfaces'] = network_interfaces_list()
     resources_kv['Amis'] = ami_list()
+    resources_kv['S3Bucket'] = get_s3_buckets_list()
+    resources_kv['rds'] = get_rds_list()
     for k,v in resources_kv.items():
-        for i in v:
-            print("updating {} of the resource id {}".format(k,i[0]))
-            create_tags(i,k)
+        if k == 'S3Bucket':
+            for i in v:
+                print("updating {} of the resource id {}".format(k,i[0]))
+                add_s3_tags(i)
+        elif k == 'rds':
+            for i in v:
+                print("updating {} of the resource id {}".format(k,i[0]))
+                add_rds_tags(i)
+        else:
+            for i in v:
+                print("updating {} of the resource id {}".format(k,i[0]))
+                create_tags(i,k)
