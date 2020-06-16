@@ -52,10 +52,10 @@ def get_rds_list():
     res = rds.describe_db_instances()
     for rds in res['DBInstances']:
         dbname = res['DBName']
-        tags = rds.list_tags_for_resource(ResourceName=res['DBName']['TagList'])
+        tags = rds.list_tags_for_resource(ResourceName=res['DBName'])
         print(dbname)
         print(tags)
-        rds_list.append(dbname,tags)
+        rds_list.append(dbname,tags['TagList'])
     return rds_list
 
 
