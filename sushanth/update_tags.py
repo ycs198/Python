@@ -46,10 +46,9 @@ def ami_list():
     return [(ami['ImageId'],ami['Tags']) for ami in res['Images']]
 
 
-def get_rds_list(filters_apply):
-    #filters_apply = [{'Name':'tag:tagname','Values':['tagvalue']}]
+def get_rds_list():
     rds = boto3.client('rds')
-    res = rds.describe_db_instances(Filters=filters_apply)
+    res = rds.describe_db_instances()
     return [(res['DBName'],rds.list_tags_for_resource(ResourceName=res['DBName'])['TagList']) for rds in res['DBInstances']]
 
 
@@ -127,7 +126,7 @@ if __name__ == '__main__':
     resources_kv['NetworkInterfaces'] = network_interfaces_list()
     resources_kv['Amis'] = ami_list()
     resources_kv['S3Bucket'] = get_s3_buckets_list()
-    resources_kv['rds'] = get_rds_list(filters_apply)
+    resources_kv['rds'] = get_rds_list()
     resources_kv['elb'] = get_elb_list()
     for k,v in resources_kv.items():
         if k == 'S3Bucket':
