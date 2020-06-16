@@ -50,7 +50,7 @@ def get_rds_list():
     rds_list = []
     rds = boto3.client('rds')
     res = rds.describe_db_instances()
-
+    return [(res['DBInstanceArn'],rds.list_tags_for_resource(ResourceName=res['DBInstanceArn'])['TagList']) for rds in res['DBInstances']]
 
 
 def add_rds_tags(dbmetadata):
